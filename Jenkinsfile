@@ -1,27 +1,42 @@
-pipeline{
+pipeline {
     agent any
+
     environment {
-        PATH = "/Applications/Docker.app/Contents/Resources/bin/docker"
+        PATH = "/Applications/Docker.app/Contents/Resources/bin:/usr/local/bin:/opt/homebrew/bin:${env.PATH}"
     }
-    stages{
+
+    stages {
+
+        stage('Check Docker') {
+            steps {
+                sh '''
+                    which docker
+                    docker --version
+                '''
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t myapp .'
             }
         }
+
         stage('Run Docker Container') {
             steps {
-                sh 'docker rm -f mycontainer || exit0'
+                sh 'docker rm -f mycontainer || true'
                 sh 'docker run -d -p 5001:5001 --name mycontainer myapp'
             }
         }
     }
+
     post {
-        success{
-            echo 'build , run done successfully'
+        success {
+            echo 'Build and run completed successfully'
         }
-        failure{
-            echo 'failed building'
+
+        failure {
+            echo 'Failed building'
         }
     }
 }
